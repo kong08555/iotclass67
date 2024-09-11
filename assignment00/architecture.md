@@ -1,8 +1,8 @@
 # Main technologies of architecture
-![Example Image](IOT-arc.png)
-## Architecture Overview
 
-![IoT Event Streaming Architecture](https://miro.medium.com/v2/resize:fit:2000/format:webp/1*IUaBLlbVKgmsjbjqzew0ZQ.png)
+## Architecture Overview
+![Example Image](IOT-arc.png)
+
 
 ## Eclipse Mosquitto
 (MQTT) เป็นโปรโตคอลสำหรับการส่งข้อมูลผ่านอินเตอร์เน็ตสำหรับ IOT
