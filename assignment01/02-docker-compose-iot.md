@@ -15,7 +15,7 @@ command
 
 ## Output
 
-- [ ] IoT Sensor - Dashboards - Grafana 
+- [|] IoT Sensor - Dashboards - Grafana 
 - [ ] UI for Apache Ka
 - [ ] Mongo Expr
 - [ ] Node Expor
