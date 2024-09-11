@@ -1,5 +1,5 @@
 # Main technologies of architecture
-
+![Example Image](IOT-arc.png)
 ## Architecture Overview
 
 ![IoT Event Streaming Architecture](https://miro.medium.com/v2/resize:fit:2000/format:webp/1*IUaBLlbVKgmsjbjqzew0ZQ.png)

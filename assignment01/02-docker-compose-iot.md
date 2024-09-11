@@ -6,6 +6,7 @@ command
 - docker compose up ในโฟลเดอร์ที่มีไฟล์ docker-compose.yml หรือใช้วิธีรัน คอนเทนเนอร์ service แต่ละส่วน เพื่อเริ่ม service แบบขั้นตอน
 
 ## ภายใน docker compose
+- ส่วนนี้คือ volume สำหรับเป็นพื้นที่จะเก็บservice log และ service เริ่มต้นอย่าง Zookeper หน้าที่ของ Zookeper คือ ดูแลทุก serviceและดูแลข้อมูลรวมถึงช่วยประสานงานสำหรับ cluster kafka
 ```
 volumes:
     prometheus_data: {}
@@ -42,8 +43,7 @@ services:
       ZOOKEEPER_AUTOPURGE_SNAP_RETAIN_COUNT: 10
       ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: 3
 ```
-- ส่วนนี้คือ volume สำหรับเป็นพื้นที่จะเก็บservice log และ service เริ่มต้นอย่าง Zookeper หน้าที่ของ Zookeper คือ ดูแลทุก serviceและดูแลข้อมูลรวมถึงช่วยประสานงานสำหรับ cluster kafka
-
+- ส่วนของ service apache kafka สำหรับ streamimg ข้อมูล แบบ realtime ซึ่งการทำงานของ kafka นั้นจำเป็นต้องให้ kafka ให้addressไปยัง zookeeper เพื่อให้ customer รู้
 ```
 # Kafka is a distributed streaming platform. It is used to build real-time streaming
   # data pipelines that reliably move data between systems and platforms, and to build
@@ -73,8 +73,7 @@ services:
     links:
       - zookeeper
 ```
-- ส่วนของ service apache kafka สำหรับ streamimg ข้อมูล แบบ realtime ซึ่งการทำงานของ kafka นั้นจำเป็นต้องให้ kafka ให้addressไปยัง zookeeper เพื่อให้ customer รู้
-
+- ส่วนของ kafka rest proxy เป็น service ที่ให้ restful API เพื่อเชื่อมต่อกับ Kafka Cluster เพื่อเข้าถึงและจัดการข้อมูลใน kafka ผ่าน http api
 ```
  # The Kafka REST Proxy provides a RESTful interface to a Kafka cluster.
   # It makes it easy to produce and consume messages, view the state
@@ -109,7 +108,7 @@ services:
       - zookeeper
       - kafka
 ```
-- ส่วนของ kafka rest proxy เป็น service ที่ให้ restful API เพื่อเชื่อมต่อกับ Kafka Cluster เพื่อเข้าถึงและจัดการข้อมูลใน kafka ผ่าน http api
+- kafka connect เป็นส่วนในที่ kafka จะเชื่อมต่อกับระบบหรือservice ภายนอก เช่น iot-processor หรือ MongoDB หรือ MQTT protocol ทำให้สื่อสารเข้าออกจากkafkaได้โดยใช้ connectors ที่มีการตั้งค่าไว้
 ```
 # Kafka Connect, an open source component of Apache Kafka,
   # is a framework for connecting Kafka with external systems
@@ -181,8 +180,7 @@ services:
       - zookeeper
       - kafka
 ```
-- kafka connect เป็นส่วนในที่ kafka จะเชื่อมต่อกับระบบหรือservice ภายนอก เช่น iot-processor หรือ MongoDB หรือ MQTT protocol ทำให้สื่อสารเข้าออกจากkafkaได้โดยใช้ connectors ที่มีการตั้งค่าไว้
-
+- ส่วนของ mosquitto ทำหน้าที่หลักในการประสานการสื่อสารระหว่างอุปกรณ์ IoT ในระบบ Mosquitto ทำหน้าที่เป็น message broker สำหรับโปรโตคอล MQTT ซึ่งจะจัดการกับการส่งข้อความระหว่าง clients โดยใช้โมเดล publish/subscribe ซึ่งช่วยให้ clients สามารถส่ง (publish) ข้อความไปยัง topics ที่กำหนด และ clients อื่นๆ สามารถรับ (subscribe) ข้อความจาก topics 
 ```
 # Eclipse Mosquitto is an open source (EPL/EDL licensed) message broker that implements the MQTT protocol versions 5.0, 3.1.1 and 3.1. Mosquitto is lightweight and is suitable for use on all devices from low power single board computers to full servers.
   # The MQTT protocol provides a lightweight method of carrying out messaging using a publish/subscribe model. This makes it suitable for Internet of Things messaging such as with low power sensors or mobile devices such as phones, embedded computers or microcontrollers.
@@ -199,7 +197,7 @@ services:
       - ./mosquitto/config:/mosquitto/config
 
 ```
-- ส่วนของ mosquitto ทำหน้าที่หลักในการประสานการสื่อสารระหว่างอุปกรณ์ IoT ในระบบ Mosquitto ทำหน้าที่เป็น message broker สำหรับโปรโตคอล MQTT ซึ่งจะจัดการกับการส่งข้อความระหว่าง clients โดยใช้โมเดล publish/subscribe ซึ่งช่วยให้ clients สามารถส่ง (publish) ข้อความไปยัง topics ที่กำหนด และ clients อื่นๆ สามารถรับ (subscribe) ข้อความจาก topics 
+- ส่วนของ mongo DB เป็นเหมือนที่เก็บข้อมูลและที่พักข้อมูลที่รับมาจาก sensor เพื่อรอส่งไปยัง service ค่างๆที่เชื่อมต่อกับ Mongo DB
 
 ```
  mongo:
@@ -213,7 +211,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGO_DB}
 ```
-- ส่วนของ mongo DB เป็นเหมือนที่เก็บข้อมูลและที่พักข้อมูลที่รับมาจาก sensor เพื่อรอส่งไปยัง service ค่างๆที่เชื่อมต่อกับ Mongo DB
+- ส่วนของ Visualization หรือส่วนแสดงผล โดย grafana จะแสดงผลในรูปแบบ dashboard โชว์ทุกข้อมูลที่รับมากจาก sensor 
 
 ```
 # Grafana is a multi-platform open source analytics and interactive visualization web application. 
@@ -240,7 +238,7 @@ services:
     ports:
       - '8085:3000'
 ```
-- ส่วนของ Visualization หรือส่วนแสดงผล โดย grafana จะแสดงผลในรูปแบบ dashboard โชว์ทุกข้อมูลที่รับมากจาก sensor 
+-  Prometheus ใช้สำหรับการตรวจสอบและการแจ้งเตือนเหตุการณ์ (event monitoring and alerting) โดยเน้นการเก็บข้อมูลเมตริกในรูปแบบ time series
 
 ```
 # Prometheus is a free software application used for event monitoring and alerting.
@@ -264,7 +262,7 @@ services:
     ports:
       - '8086:9090'
 ```
--  Prometheus ใช้สำหรับการตรวจสอบและการแจ้งเตือนเหตุการณ์ (event monitoring and alerting) โดยเน้นการเก็บข้อมูลเมตริกในรูปแบบ time series
+- ส่วน iot_sensor_1 เป็น sensor จำลองโดยดึงจาก ssanchez11/iot_sensor:0.0.1-SNAPSHOT มาจำลองเพื่อส่งข้อมูลงไปยัง kafka
 
 ```
  # # IoT Sensor 1
@@ -281,7 +279,7 @@ services:
         condition: service_started
         restart: true
 ```
-- ส่วน iot_sensor_1 เป็น sensor จำลองโดยดึงจาก ssanchez11/iot_sensor:0.0.1-SNAPSHOT มาจำลองเพื่อส่งข้อมูลงไปยัง kafka
+- ส่วน iot-processor ใช้ ประมวลผลข้อมูลจากเซ็นเซอร์ IoT รับข้อมูลจาก Kafka Connect และประมวลผลข้อมูล IoT 
 
 ```
 # IoT Processor
@@ -296,7 +294,7 @@ services:
         condition: service_started
         restart: true
 ```
-- ส่วน iot-processor ใช้ ประมวลผลข้อมูลจากเซ็นเซอร์ IoT รับข้อมูลจาก Kafka Connect และประมวลผลข้อมูล IoT 
+
 
 ## วิธีการรัน script แต่ละ service เพื่อทำตามลำดับขั้นตอน
 ## start-service #0
@@ -305,7 +303,9 @@ services:
 
 docker compose up zookeeper kafka
 ```
-- script แรกเริ่มรัน container service zookeper และ kafka เพื่อเริ่มการประมวลผลข้อมูลและการดูแลserviceและดูแลcluster ทั้งหมด ส่วนนี้จะต้องเริ่มทำงานก่อน
+- script แรกเริ่มรัน container service zookeper และ kafka เพื่อเริ่มการประมวลผลข้อมูลและการดูแลserviceและดูแลcluster ทั้งหมด ส่วนนี้จะต้องเริ่มทำงานก่อน เมื่อส่วนนี้รันถึง Zookeper จะต้องรอทำงานก็ต้องเริ่ม script ส่วนต่อไป
+- command
+- $ sh start_0zookeeper_kafka.sh
 ## start-service #1
 ```
 #!/bin/bash
@@ -313,22 +313,27 @@ docker compose up zookeeper kafka
 docker compose up kafka-rest-proxy kafka-connect mosquitto mongo grafana prometheus
 ```
 - เริ่มส่วน service ที่เป็นการประมวลผล, เก็บข้อมูล, และแสดงผล โดยใช้ service ที่เกี่ยวข้อง
+- command เมื่อส่วนนี้ทำงานถึง kafka-connect เริ่ม respond 0 หรือ 200 ก็เริ่มส่วน script ของ iot-processor
+- $ sh start_1kafka_service.sh
 ## start-service #2
 ```
 #!/bin/bash
 
 docker compose up iot-processor
 ```
-- เริ่ม service iot-processor เพื่อให้มันเริ่มทำงานก่อนที่มีข้อมูลจาก sensor ส่งเข้ามา
-
+- เริ่ม service iot-processor เพื่อให้มันเริ่มทำงานก่อนที่มีข้อมูลจาก sensor ส่งเข้ามา เราจะรู้ได้ว่าส่วนนี้ทำงานแล้วก็ต่อเมื่อส่วนของ kafka connect มีการ respond 200 
+- command
+- $ sh start_2iot_processor.sh
 ## start-service #3
 ```
 #!/bin/bash
 
 docker compose up iot_sensor_1
 ```
-- เริ่ม container iot_sensor จำลองในการส่งข้อมูงไปให้ iot-processor ประมวลผลข้อมูลและส่งต่อไปยัง kafka connect
-
+- เริ่ม container iot_sensor จำลองในการส่งข้อมูลไปให้ iot-processor ประมวลผลข้อมูลและส่งต่อไปยัง kafka connect
+เราจะรู้output ก็ต่อเมื่อ มีข้อมูลแสดงที่ dashboard ของ grafana เรียบน้อย 
+- command
+- $ sh start_3iot_sensor.sh
 
 
 ## Error we found
